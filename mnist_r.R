@@ -46,10 +46,10 @@ download <- function(url, filename) {
 mnist <- function() {
   base_url = "http://yann.lecun.com/exdb/mnist/"
   
-  parse_labels <- function(filename) {
     # [offset] [type] [value] [description]
     # 0000  32bit integer 0x000000801(2049) magic number (MSB first)
     # 0004  32bit integer 60000             number of items
+  parse_labels <- function(filename) {
     fcon <- gzfile(filename,"rb")
     meta <- readBin(fcon,what="int",n=2,endian="big")
     magic <- meta[1]
