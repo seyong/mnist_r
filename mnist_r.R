@@ -46,9 +46,9 @@ download <- function(url, filename) {
 mnist <- function() {
   base_url = "http://yann.lecun.com/exdb/mnist/"
   
-    # [offset] [type] [value] [description]
-    # 0000  32bit integer 0x000000801(2049) magic number (MSB first)
-    # 0004  32bit integer 60000             number of items
+  # [offset] [type] [value] [description]
+  # 0000  32bit integer 0x000000801(2049) magic number (MSB first)
+  # 0004  32bit integer 60000             number of items
   parse_labels <- function(filename) {
     fcon <- gzfile(filename,"rb")
     meta <- readBin(fcon,what="int",n=2,endian="big")
@@ -60,17 +60,40 @@ mnist <- function() {
     return(dt)
   }
   
+  # [offset]  [type]  [valeu] [description]
+  # 0000  32bit_integer 0x00000803(2051)  magic number
+  # 0004  32bit_integer 10000 number of images
+  # 0008  32bit_integer 28  number of rows
+  # 0012  32bit_integer 28  number of columns
   parse_images <- function(filename) {
-     
+    fcon <- gzfile(filename,"rb")
+    meta <- readBin(fcon,what="int",n=4,endian = "big") 
+    magic <- meta[1]
+    num_data <- meta[2]
+    num_rows <- meta[3]
+    num_cols <- meta[4]
+    dt <- readBin(fcon,what="raw",n=num_data*num_rows*num_cols,endian="big") 
+    close(fcon)
+   
+    return(array(data=dt,dim=c(num_data,num_rows,num_cols)))
   }
   
   filenames <- c("train-images-idx3-ubyte.gz","train-labels-idx1-ubyte.gz","t10k-images-idx3-ubyte.gz","t10k-labels-idx1-ubyte.gz")
   for(filename in filenames) {
     download(paste(base_url,filename,sep=""),filename)
   }
+  
+  train_images = parse_images('data/train-images-idx3-ubyte.gz')
+  train_labels = parse_labels('data/train-labels-idx1-ubyte.gz')
+  test_images = parse_images('data/t10k-images-idx3-ubyte.gz')
+  test_labels = parse_labels('data/t10k-labels-idx1-ubyte.gz')
+  
+  return(list(train_images = train_images,train_labels = train_labels, test_images = test_images, test_labels = test_labels))
+  
 }
 
 load_mnist <- function() {
+  mnist_data <- mnist() 
   
 }
 
