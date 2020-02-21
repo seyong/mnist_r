@@ -74,8 +74,9 @@ mnist <- function() {
     num_cols <- meta[4]
     dt <- readBin(fcon,what="raw",n=num_data*num_rows*num_cols,endian="big") 
     close(fcon)
-   
-    return(array(data=dt,dim=c(num_data,num_rows,num_cols)))
+  
+    #return with flattened images 
+    return(matrix(data=dt,nrow=num_data,ncol=num_rows*num_cols,byrow=TRUE))
   }
   
   filenames <- c("train-images-idx3-ubyte.gz","train-labels-idx1-ubyte.gz","t10k-images-idx3-ubyte.gz","t10k-labels-idx1-ubyte.gz")
@@ -92,15 +93,57 @@ mnist <- function() {
   
 }
 
+# reshape images of [N,28,28] to [N,28*28] structure.
+# flattening with 3d-array in R is difficult. Flatten is applied when loading the data.
+flatten <- function() {
+}
+
+one_hot_encoding <- function(x, k) {
+  # prototype:
+  # lambda x, k: np.array(x[:,None] == np.arange(k)[None,:], dtype=int)
+  # Input: 
+  #   x: array 
+  #   k: integer
+  x <- sapply(x,as.integer)
+  
+  one_hot <- function(digit,class) {
+    one_hot_vector <- rep(0,class)
+    one_hot_vector[digit+1] <- 1 
+    return(one_hot_vector)
+  }
+  return(t(sapply(x,one_hot,class=k)))
+}
+
 load_mnist <- function() {
   mnist_data <- mnist() 
   
+  numData <- dim(train_ima)
 }
 
-plot_images <- function() {
+plot_images <- function(images,ax,images_per_row=5, padding=5, digit_dim = c(28,28), vmin = None, vmax = None) {
+  # Images should be a (N_images x pixels) matrix. 
+  numImages <- dim(images)[1] 
+  numRow <- ceiling(numImages / images_per_row)
+  padding 
+ 
+   
+  for(i in 1:numImages){
+    img <- as.integer(images[i,])
+    img_mat <- matrix(img,nrow=digit_dim[1],ncol=digit_dim[2],byrow=TRUE)
+    row_idx <- i / images_per_row
+    col_idx <- i %% images_per_row 
+  }
   
+  # plot config.
 }
 
 save_images <- function() {
   
 }
+
+
+tmp <- mnist_data$test_images[2,]
+tmp2 <- as.integer(tmp)
+tmp3 <- matrix(tmp2,nrow=28,ncol=28,byrow = TRUE)
+tmp3 <- apply(tmp3,MARGIN=2,rev)
+image(z = t(tmp3))
