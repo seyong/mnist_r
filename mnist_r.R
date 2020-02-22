@@ -120,18 +120,24 @@ load_mnist <- function() {
   numData <- dim(train_ima)
 }
 
-plot_images <- function(images,ax,images_per_row=5, padding=5, digit_dim = c(28,28), vmin = None, vmax = None) {
+plot_images <- function(images,images_per_row=5, padding=5, digit_dim = c(28,28)) {
   # Images should be a (N_images x pixels) matrix. 
   numImages <- dim(images)[1] 
-  numRow <- ceiling(numImages / images_per_row)
-  padding 
- 
+  numRow <- ceiling(numImages / images_per_row) # numbe of row in this plot
+  init_val <- 0
+  out_img_width <- ((digit_dim[2] + padding)* images_per_row ) + padding
+  out_img_height <- ((digit_dim[1] + padding) * numRow ) + padding
+  out_img <- matrix(data = init_val, nrow = out_img_height, ncol = out_img_width )
    
   for(i in 1:numImages){
     img <- as.integer(images[i,])
     img_mat <- matrix(img,nrow=digit_dim[1],ncol=digit_dim[2],byrow=TRUE)
-    row_idx <- i / images_per_row
-    col_idx <- i %% images_per_row 
+    row_idx <- (i / images_per_row)
+    col_idx <- (i %% images_per_row)  
+   
+    row_i <- padding + row_idx * digit_dim[1]
+    col_i <- padding + col_idx * digit_dim[2]
+    out_img[] <- img
   }
   
   # plot config.
