@@ -2,6 +2,7 @@
 # 
 
 download <- function(url, filename) {
+  
   error_handling <- function(cond) {
     
   }
@@ -90,12 +91,6 @@ mnist <- function() {
   test_labels = parse_labels('data/t10k-labels-idx1-ubyte.gz')
   
   return(list(train_images = train_images,train_labels = train_labels, test_images = test_images, test_labels = test_labels))
-  
-}
-
-# reshape images of [N,28,28] to [N,28*28] structure.
-# flattening with 3d-array in R is difficult. Flatten is applied when loading the data.
-flatten <- function() {
 }
 
 one_hot_encoding <- function(x, k) {
@@ -120,7 +115,8 @@ load_mnist <- function() {
   numData <- dim(train_ima)
 }
 
-plot_images <- function(images,images_per_row=5, padding=5, digit_dim = c(28,28)) {
+plot_images <- function(images,images_per_row=5, padding=5, 
+                        digit_dim = c(28,28),colorMap=hcl.colors(20,"gray",rev=TRUE) ) {
   # Images should be a (N_images x pixels) matrix. 
   numImages <- dim(images)[1] 
   numRow <- ceiling(numImages / images_per_row) # numbe of row in this plot
@@ -128,28 +124,43 @@ plot_images <- function(images,images_per_row=5, padding=5, digit_dim = c(28,28)
   out_img_width <- ((digit_dim[2] + padding)* images_per_row ) + padding
   out_img_height <- ((digit_dim[1] + padding) * numRow ) + padding
   out_img <- matrix(data = init_val, nrow = out_img_height, ncol = out_img_width )
-   
+  #cat(sprintf("out_img dimension: %s \n", dim(out_img)))
   for(i in 1:numImages){
     img <- as.integer(images[i,])
     img_mat <- matrix(img,nrow=digit_dim[1],ncol=digit_dim[2],byrow=TRUE)
-    row_idx <- (i / images_per_row)
-    col_idx <- (i %% images_per_row)  
+    #img_mat <- apply(img_mat,MARGIN=2,rev)
+    row_idx <- as.integer((i-1) / images_per_row)
+    col_idx <- ((i-1) %% images_per_row)
    
-    row_i <- padding + row_idx * digit_dim[1]
-    col_i <- padding + col_idx * digit_dim[2]
-    out_img[] <- img
+    row_i <- padding + (row_idx * (digit_dim[1] + padding) + 1)
+    col_i <- padding + (col_idx * (digit_dim[2] + padding) + 1)
+    out_img[row_i: (row_i + digit_dim[1] - 1), 
+            col_i: (col_i + digit_dim[2] - 1)] <- img_mat
   }
   
   # plot config.
+  out_img <- apply(out_img,MARGIN=2,rev)
+  out_plot <- image(z = t(out_img),col = colorMap,useRaster = TRUE, xaxt = 'n',yaxt = 'n') 
+  return(out_plot)
 }
 
-save_images <- function() {
-  
+save_images <- function(images,plot_name,...) {
+  colorMap <- hcl.colors(20,"gray",rev=TRUE)
+  png(filename = plot_name)
+  plot_images(images,...)
+  dev.off()
 }
 
+mnist_data = mnist()
+test_imgs <- mnist_data$test_image[1:10,]
+test_labels <- mnist_data$test_label[1:10]
+test_img <- apply(test_imgs,MARGIN = c(1,2),FUN = as.integer)
+g <- plot_images(test_img)
+g <- apply(g,MARGIN=2,rev)
 
-tmp <- mnist_data$test_images[2,]
-tmp2 <- as.integer(tmp)
-tmp3 <- matrix(tmp2,nrow=28,ncol=28,byrow = TRUE)
-tmp3 <- apply(tmp3,MARGIN=2,rev)
-image(z = t(tmp3))
+# image function interprets Z matrix as a table of f(x[i],y[i])
+# so that the value of the x axis corresponds to row number and 
+# the y axis to column number, with column 1 at the bottom.
+# i.e. a 90 degree counter-clockiwise rotation of the conventional 
+#   printed layout of a matrix
+image(z = t(g),useRaster = TRUE)
