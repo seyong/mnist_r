@@ -124,7 +124,7 @@ plot_images <- function(images,images_per_row=5, padding=5,
   out_img_width <- ((digit_dim[2] + padding)* images_per_row ) + padding
   out_img_height <- ((digit_dim[1] + padding) * numRow ) + padding
   out_img <- matrix(data = init_val, nrow = out_img_height, ncol = out_img_width )
-  #cat(sprintf("out_img dimension: %s \n", dim(out_img)))
+  
   for(i in 1:numImages){
     img <- as.integer(images[i,])
     img_mat <- matrix(img,nrow=digit_dim[1],ncol=digit_dim[2],byrow=TRUE)
@@ -139,6 +139,12 @@ plot_images <- function(images,images_per_row=5, padding=5,
   }
   
   # plot config.
+  # image function interprets Z matrix as a table of f(x[i],y[i])
+  # so that the value of the x axis corresponds to row number and 
+  # the y axis to column number, with column 1 at the bottom.
+  # i.e. a 90 degree counter-clockiwise rotation of the conventional 
+  #   printed layout of a matrix
+
   out_img <- apply(out_img,MARGIN=2,rev)
   out_plot <- image(z = t(out_img),col = colorMap,useRaster = TRUE, xaxt = 'n',yaxt = 'n') 
   return(out_plot)
@@ -158,9 +164,4 @@ test_img <- apply(test_imgs,MARGIN = c(1,2),FUN = as.integer)
 g <- plot_images(test_img)
 g <- apply(g,MARGIN=2,rev)
 
-# image function interprets Z matrix as a table of f(x[i],y[i])
-# so that the value of the x axis corresponds to row number and 
-# the y axis to column number, with column 1 at the bottom.
-# i.e. a 90 degree counter-clockiwise rotation of the conventional 
-#   printed layout of a matrix
 image(z = t(g),useRaster = TRUE)
